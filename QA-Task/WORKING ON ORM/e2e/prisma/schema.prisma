@@ -1,0 +1,56 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./test.db"
+}
+
+model AppUser {
+    id                         Int      @id @default(autoincrement())
+    is_deleted                 Boolean  @default(false)
+    username                   String   @unique
+    firstname                  String
+    lastname                   String
+    password                   String
+    email                      String
+    nonlocked                  Boolean
+    enabled                    Boolean
+    last_time_password_updated DateTime @default("1970-01-01T00:00:00.000Z")
+    password_never_expires     Boolean  @default(false)
+    cannot_change_password     Boolean  @default(false)
+
+    roles AppUserRole[]
+    userPhones UserPhone[]
+}
+
+model Role {
+    id          Int     @id @default(autoincrement())
+    name        String  @unique
+    description String
+    is_disabled Boolean @default(false)
+
+    appUsers AppUserRole[]
+}
+
+model AppUserRole {
+    appuser_id Int
+    role_id    Int
+    AppUser    AppUser @relation(fields: [appuser_id], references: [id])
+    Role       Role    @relation(fields: [role_id], references: [id])
+
+    @@id([appuser_id, role_id])
+    @@map("appuserrole")
+}
+
+model UserPhone {
+  id               Int      @id @default(autoincrement())
+  appuser_id       Int
+  phone_country_id Int
+  phone            String
+  order_index      Int
+
+  AppUser          AppUser  @relation(fields: [appuser_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+}
+
